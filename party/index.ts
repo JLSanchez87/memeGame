@@ -1,6 +1,12 @@
 import type * as Party from "partykit/server";
 
-import { gameUpdater, initialGame, Action, ServerAction } from "../game/logic";
+import {
+  gameUpdater,
+  initialGame,
+  Action,
+  ServerAction,
+  randomMemes,
+} from "../game/logic";
 import { GameState } from "../game/logic";
 
 interface ServerMessage {
@@ -15,6 +21,22 @@ export default class Server implements Party.Server {
     console.log("Room created:", party.id);
     console.log("Room target", this.gameState.target);
     // party.storage.put;
+  }
+  onStart() {
+    console.log("WEBSOCKET SERVER STARTED");
+    // Create the functionality for the interval:
+    // - [X] Every 10 seconds, start a new round
+    // - [ ] Max it at 10 rounds
+    const roundsInterval = setInterval(() => {
+      const newMemes = randomMemes();
+      // Functionality to execute every 10 seconds
+      const newGameState = {
+        ...this.gameState,
+        memes: newMemes.threeMemes,
+        target: newMemes.answer.id,
+      };
+      this.party.broadcast(JSON.stringify(newGameState));
+    }, 20_000);
   }
   onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {
     // A websocket just connected!

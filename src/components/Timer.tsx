@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { RandomMemes } from "@/components/Game";
 import memes from "@/pages/data/memes.json";
-import { gameUpdater } from "../../game/logic";
+import { addLog, gameUpdater, randomMemes } from "../../game/logic";
 import { GameState, ServerAction } from "../../game/logic";
 import { initialGame } from "../../game/logic";
 
@@ -33,24 +33,24 @@ import { initialGame } from "../../game/logic";
 //   };
 // };
 
-const Timer = () => {
-  // Assumption: gameState is your current game state
-  let [gameState, setGameState] = useState(initialGame());
+// const Timer = () => {
+//   // Assumption: gameState is your current game state
+//   let [gameState, setGameState] = useState(initialGame());
 
-  const [seconds, setSeconds] = useState(10);
+//   const [seconds, setSeconds] = useState(10);
 
-  useEffect(() => {
-    if (seconds > 0) {
-      setTimeout(() => setSeconds(seconds - 1), 1000);
-    } else {
-      setSeconds(10);
-      gameState = startNewGameRound(gameState); //Update game state with new memes after 10 sec
-      setGameState(gameState);
-    }
-  }, [seconds]);
+//   useEffect(() => {
+//     if (seconds > 0) {
+//       setTimeout(() => setSeconds(seconds - 1), 1000);
+//     } else {
+//       setSeconds(10);
+//       //   const newGameState = startNewGameRound(gameState); //Update game state with new memes after 10 sec
+//       dispatch(newGameState);
+//     }
+//   }, [seconds]);
 
-  /* render the game here */
-  return <div>Time left: {seconds}</div>;
-};
+//   /* render the game here */
+//   return <div>Time left: {seconds}</div>;
+// };
 
-export default Timer;
+// export default Timer;

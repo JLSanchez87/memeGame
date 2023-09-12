@@ -35,7 +35,7 @@ import { useState, useEffect } from "react";
 
 // const [threeMemes, setThreeMemes] = useState([]);
 
-const randomMemes = () => {
+export const randomMemes = () => {
   const shuffledMemes = memes.sort(() => 0.5 - Math.random()); // Shuffle the memes
   const firstThreeMemes = shuffledMemes.slice(0, 3); // Get the first three memes
   const randomMemeFromThreeMemes =
@@ -49,7 +49,10 @@ const randomMemes = () => {
 // 	threeMemes[Math.floor(Math.random() * threeMemes.length)];
 
 // util for easy adding logs
-const addLog = (message: string, logs: GameState["log"]): GameState["log"] => {
+export const addLog = (
+  message: string,
+  logs: GameState["log"]
+): GameState["log"] => {
   return [{ dt: new Date().getTime(), message: message }, ...logs].slice(
     0,
     MAX_LOG_SIZE

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useGameRoom } from "@/hooks/useGameRoom";
 import { number } from "zod";
-import Timer from "./Timer";
+// import Timer from "./Timer";
 
 interface GameProps {
   username: string;
@@ -52,7 +52,7 @@ const Game = ({ username, roomId }: GameProps) => {
     event.preventDefault();
 
     const target = event.target as typeof event.target & {
-      meme: { value: number };
+      meme: { value: string };
     };
     const meme = target.meme.value; // typechecks!
 
@@ -67,7 +67,7 @@ const Game = ({ username, roomId }: GameProps) => {
       <h1 className="text-2xl border-b border-yellow-400 text-center relative">
         🎲 Guess the number!
       </h1>
-      <Timer />
+      {/* <Timer /> */}
       <section>
         <form
           className="flex flex-col gap-4 py-6 items-center"
