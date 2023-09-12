@@ -63,14 +63,12 @@ export interface GameState extends BaseGameState {
 // In the case of the guesser game we start out with a random target
 export const initialGame = () => {
   const generatedRandomMemes = randomMemes();
-  let score = 0;
-
   return {
     memes: generatedRandomMemes.threeMemes,
     target: generatedRandomMemes.answer,
     users: [],
     log: addLog("🐄 Game Created!", []),
-    score: score,
+    score: 0,
   };
 };
 
@@ -110,11 +108,10 @@ export const gameUpdater = (
       console.log(typeof state.target);
       console.log("action.username");
       console.log(action.username);
-      console.log(parseInt(action.guess) === state.target);
       if (action.guess.id === state.target.id) {
         console.log("EXEC");
         // UPDATE STATE WITH NEW RANDOM MEMES AND CHOSEN MEME
-        // const generatedRandomMemes = randomMemes();
+        const generatedRandomMemes = randomMemes();
         console.log(action.username);
 
         const newUsers = state.users.map((user) => {
@@ -131,11 +128,12 @@ export const gameUpdater = (
         });
 
         console.log(newUsers);
-        
+
         return {
           ...state,
           // memes: generatedRandomMemes.threeMemes,
-          // target: generatedRandomMemes.answer.id,
+          // target: generatedRandomMemes.answer,
+          users: newUsers,
           log: addLog(
             `user ${action.user.id} answered ${action.guess.name} and won 1 point! 👑`,
             state.log

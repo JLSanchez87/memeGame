@@ -33,10 +33,10 @@ export default class Server implements Party.Server {
       const newGameState = {
         ...this.gameState,
         memes: newMemes.threeMemes,
-        target: newMemes.answer.id,
+        target: newMemes.answer,
       };
       this.party.broadcast(JSON.stringify(newGameState));
-    }, 20_000);
+    }, 10_000);
   }
   onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {
     // A websocket just connected!
