@@ -1,37 +1,5 @@
 import { RandomMemes } from "@/components/Game";
 import memes from "@/pages/data/memes.json";
-import { useState, useEffect } from "react";
-
-// const startNewGameRound = (state: GameState): GameState => {
-//   const generatedRandomMemes = randomMemes();
-//   return {
-//     ...state,
-//     memes: generatedRandomMemes.threeMemes,
-//     target: generatedRandomMemes.answer.id,
-//     log: addLog("New round started!", state.log),
-//   };
-// };
-
-// const GameRound = () => {
-//   // Assumption: gameState is your current game state
-//   let [gameState, setGameState] = useState(initialGame());
-
-//   const [seconds, setSeconds] = useState(10);
-
-//   useEffect(() => {
-//     if (seconds > 0) {
-//       setTimeout(() => setSeconds(seconds - 1), 1000);
-//     } else {
-//       setSeconds(10);
-//       const newGameState = startNewGameRound(gameState); //Update game state with new memes after 10 sec
-//       setGameState(gameState);
-//     }
-//   }, [seconds]);
-
-//   /* render the game here */
-// };
-
-// GameRound();
 
 // const [threeMemes, setThreeMemes] = useState([]);
 
@@ -44,11 +12,8 @@ export const randomMemes = () => {
   return { threeMemes: firstThreeMemes, answer: randomMemeFromThreeMemes };
 };
 
-// const threeMemes = randomMemes();
-// export const randomMeme: RandomMemes =
-// 	threeMemes[Math.floor(Math.random() * threeMemes.length)];
-
 // util for easy adding logs
+
 export const addLog = (
   message: string,
   logs: GameState["log"]
@@ -62,6 +27,7 @@ export const addLog = (
 // If there is anything you want to track for a specific user, change this interface
 export interface User {
   id: string;
+  score: number;
 }
 
 // Do not change this! Every game has a list of users and log of actions
@@ -89,24 +55,27 @@ export type DefaultAction = { type: "UserEntered" } | { type: "UserExit" };
 
 // This interface holds all the information about your game
 export interface GameState extends BaseGameState {
-  target: number;
+  target: RandomMemes;
+  score: number;
 }
 
 // This is how a fresh new game starts out, it's a function so you can make it dynamic!
 // In the case of the guesser game we start out with a random target
 export const initialGame = () => {
   const generatedRandomMemes = randomMemes();
+  let score = 0;
 
   return {
     memes: generatedRandomMemes.threeMemes,
-    target: generatedRandomMemes.answer.id,
+    target: generatedRandomMemes.answer,
     users: [],
     log: addLog("🐄 Game Created!", []),
+    score: score,
   };
 };
 
 // Here are all the actions we can dispatch for a user
-type GameAction = { type: "guess"; guess: string };
+type GameAction = { type: "guess"; guess: RandomMemes; username: string };
 
 export const gameUpdater = (
   action: ServerAction,
@@ -120,12 +89,15 @@ export const gameUpdater = (
   // you don't need to add this yourself
   switch (action.type) {
     case "UserEntered":
+      const newUser = {
+        id: action.user.id,
+        score: 0, // Initialize the user's score to 0
+      };
       return {
         ...state,
-        users: [...state.users, action.user],
+        users: [...state.users, newUser],
         log: addLog(`user ${action.user.id} joined 🎉`, state.log),
       };
-
     case "UserExit":
       return {
         ...state,
@@ -136,17 +108,36 @@ export const gameUpdater = (
     case "guess":
       console.log(typeof action.guess);
       console.log(typeof state.target);
+      console.log("action.username");
+      console.log(action.username);
       console.log(parseInt(action.guess) === state.target);
-      if (parseInt(action.guess) === state.target) {
+      if (action.guess.id === state.target.id) {
         console.log("EXEC");
         // UPDATE STATE WITH NEW RANDOM MEMES AND CHOSEN MEME
         // const generatedRandomMemes = randomMemes();
+        console.log(action.username);
+
+        const newUsers = state.users.map((user) => {
+          // ALS user.id === action.username
+          // DAN increase score en return user
+          // ELSE doe niks en return user
+          if (user.id === action.username) {
+            const newScore = user.score + 1;
+            console.log(newScore);
+            return { ...user, score: newScore };
+          } else {
+            return user;
+          }
+        });
+
+        console.log(newUsers);
+        
         return {
           ...state,
           // memes: generatedRandomMemes.threeMemes,
           // target: generatedRandomMemes.answer.id,
           log: addLog(
-            `user ${action.user.id} answered ${action.guess} and won! 👑`,
+            `user ${action.user.id} answered ${action.guess.name} and won 1 point! 👑`,
             state.log
           ),
         };
@@ -154,7 +145,7 @@ export const gameUpdater = (
         return {
           ...state,
           log: addLog(
-            `user ${action.user.id} answered ${action.guess}`,
+            `user ${action.user.id} answered ${action.guess.name}`,
             state.log
           ),
         };
