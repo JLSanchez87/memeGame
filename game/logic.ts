@@ -1,6 +1,5 @@
 import { RandomMemes } from "@/components/Game";
 import memes from "@/pages/data/memes.json";
-import { useState } from "react";
 
 // const [threeMemes, setThreeMemes] = useState([]);
 
@@ -12,10 +11,6 @@ export const randomMemes = () => {
 
   return { threeMemes: firstThreeMemes, answer: randomMemeFromThreeMemes };
 };
-
-// const threeMemes = randomMemes();
-// export const randomMeme: RandomMemes =
-// 	threeMemes[Math.floor(Math.random() * threeMemes.length)];
 
 // util for easy adding logs
 const addLog = (message: string, logs: GameState["log"]): GameState["log"] => {
@@ -113,8 +108,6 @@ export const gameUpdater = (
         console.log("EXEC");
         // UPDATE STATE WITH NEW RANDOM MEMES AND CHOSEN MEME
         const generatedRandomMemes = randomMemes();
-        // let score = 0;
-        // score = score++;
         console.log(action.username);
 
         const newUsers = state.users.map((user) => {

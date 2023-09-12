@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useGameRoom } from "@/hooks/useGameRoom";
-import { number } from "zod";
 import { randomMemes } from "../../game/logic";
 
 interface GameProps {
@@ -100,12 +99,6 @@ const Game = ({ username, roomId }: GameProps) => {
         </form>
 
         <div className="border-t border-yellow-400 py-2" />
-        {/* <button
-          className="border border-black p-5"
-          onClick={() => dispatch({ type: "bet", amount: 100 })}
-        >dispatch({ type: "guess", guess: number });
-          Bet!
-        </button> */}
 
         <div className=" bg-yellow-100 flex flex-col p-4 rounded text-sm">
           {gameState.log.map((logEntry, i) => (
