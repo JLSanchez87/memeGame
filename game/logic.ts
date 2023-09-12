@@ -2,26 +2,20 @@ import { RandomMemes } from "@/components/Game";
 import memes from "@/pages/data/memes.json";
 import { useState } from "react";
 
-export const randomMemes = () => {
-	// const [memes, setMemes] = useState([]);
+// const [threeMemes, setThreeMemes] = useState([]);
 
+const randomMemes = () => {
 	const shuffledMemes = memes.sort(() => 0.5 - Math.random()); // Shuffle the memes
 	const firstThreeMemes = shuffledMemes.slice(0, 3); // Get the first three memes
-	// setMemes(firstThreeMemes);
-	// console.log(firstThreeMemes);
+	const randomMemeFromThreeMemes =
+		firstThreeMemes[Math.floor(Math.random() * firstThreeMemes.length)];
 
-	return firstThreeMemes;
-};
-randomMemes();
-
-const answerMeme = () => {
-	const randomMemesArray = randomMemes();
-	const randomMeme =
-		randomMemesArray[Math.floor(Math.random() * randomMemesArray.length)];
-	console.log(randomMeme);
+	return { threeMemes: firstThreeMemes, answer: randomMemeFromThreeMemes };
 };
 
-answerMeme();
+// const threeMemes = randomMemes();
+// export const randomMeme: RandomMemes =
+// 	threeMemes[Math.floor(Math.random() * threeMemes.length)];
 
 // util for easy adding logs
 const addLog = (message: string, logs: GameState["log"]): GameState["log"] => {
@@ -66,21 +60,19 @@ export interface GameState extends BaseGameState {
 
 // This is how a fresh new game starts out, it's a function so you can make it dynamic!
 // In the case of the guesser game we start out with a random target
-export const initialGame = () => ({
-	// const [randomMeme, setRandomMemes] = useState([]),
-	memes: randomMemes(),
+export const initialGame = () => {
+	const generatedRandomMemes = randomMemes();
 
-	// const shuffledMemes = memes.sort(() => 0.5 - Math.random()); // Shuffle the memes
-	// const firstThreeMemes = shuffledMemes.slice(0, 3); // Get the first three memes
-	// setMemes(firstThreeMemes)
-
-	users: [],
-	target: answerMeme(),
-	log: addLog("🐄 Game Created!", []),
-});
+	return {
+		memes: generatedRandomMemes.threeMemes,
+		target: generatedRandomMemes.answer.id,
+		users: [],
+		log: addLog("🐄 Game Created!", []),
+	};
+};
 
 // Here are all the actions we can dispatch for a user
-type GameAction = { type: "guess"; guess: number };
+type GameAction = { type: "guess"; guess: string };
 
 export const gameUpdater = (
 	action: ServerAction,
@@ -108,10 +100,17 @@ export const gameUpdater = (
 			};
 
 		case "guess":
-			if (action.guess === state.target) {
+			console.log(typeof action.guess);
+			console.log(typeof state.target);
+			console.log(parseInt(action.guess) === state.target);
+			if (parseInt(action.guess) === state.target) {
+				console.log("EXEC");
+				// UPDATE STATE WITH NEW RANDOM MEMES AND CHOSEN MEME
+				const generatedRandomMemes = randomMemes();
 				return {
 					...state,
-					target: Math.floor(Math.random() * 2),
+					memes: generatedRandomMemes.threeMemes,
+					target: generatedRandomMemes.answer.id,
 					log: addLog(
 						`user ${action.user.id} answered ${action.guess} and won! 👑`,
 						state.log

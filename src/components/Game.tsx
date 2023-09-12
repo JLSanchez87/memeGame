@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useGameRoom } from "@/hooks/useGameRoom";
-import { randomMemes } from "../../game/logic";
+import { number } from "zod";
 
 interface GameProps {
 	username: string;
@@ -8,7 +8,7 @@ interface GameProps {
 }
 
 export interface RandomMemes {
-	id: string;
+	id: number;
 	name: string;
 	url: string;
 	width?: number;
@@ -19,7 +19,8 @@ export interface RandomMemes {
 
 const Game = ({ username, roomId }: GameProps) => {
 	const { gameState, dispatch } = useGameRoom(username, roomId);
-	console.log(gameState);
+	const [selectedMemeId, setSelectedMemeId] = useState(null);
+
 	// Local state to use for the UI
 	const [guess, setGuess] = useState<number>(0);
 
@@ -48,9 +49,16 @@ const Game = ({ username, roomId }: GameProps) => {
 
 	const handleGuess = (event: React.SyntheticEvent) => {
 		event.preventDefault();
+
+		const target = event.target as typeof event.target & {
+			meme: { value: number };
+		};
+		const meme = target.meme.value; // typechecks!
+
+		console.log(meme);
 		// Dispatch allows you to send an action!
 		// Modify /game/logic.ts to change what actions you can send
-		dispatch({ type: "guess", guess: guess });
+		dispatch({ type: "guess", guess: meme });
 	};
 
 	return (
@@ -58,62 +66,23 @@ const Game = ({ username, roomId }: GameProps) => {
 			<h1 className="text-2xl border-b border-yellow-400 text-center relative">
 				🎲 Guess the number!
 			</h1>
-			{gameState.memes.map((meme) => {
-				return (
-					<div key={meme.id}>
-						<p>{meme.name}</p>
-						<img src={meme.url} />
-					</div>
-				);
-			})}
 
 			<section>
 				<form
 					className="flex flex-col gap-4 py-6 items-center"
 					onSubmit={handleGuess}
 				>
-					<label
-						htmlFor="guess"
-						className="text-7xl font-bold text-stone-50 bg-black rounded p-2 text-"
-					>
-						Random Meme 1
-					</label>
-					<input
-						type="radio"
-						name="guess"
-						id="guess"
-						className="opacity-70 hover:opacity-100 accent-yellow-400"
-						onChange={(e) => setGuess(Number(e.currentTarget.value))}
-						value={guess}
-					/>
-					<label
-						htmlFor="guess"
-						className="text-7xl font-bold text-stone-50 bg-black rounded p-2 text-"
-					>
-						Random Meme 2
-					</label>
-					<input
-						type="radio"
-						name="guess"
-						id="guess"
-						className="opacity-70 hover:opacity-100 accent-yellow-400"
-						onChange={(e) => setGuess(Number(e.currentTarget.value))}
-						value={guess}
-					/>
-					<label
-						htmlFor="guess"
-						className="text-7xl font-bold text-stone-50 bg-black rounded p-2 text-"
-					>
-						Random Meme 3
-					</label>
-					<input
-						type="radio"
-						name="guess"
-						id="guess"
-						className="opacity-70 hover:opacity-100 accent-yellow-400"
-						onChange={(e) => setGuess(Number(e.currentTarget.value))}
-						value={guess}
-					/>
+					{gameState.memes.map((meme) => {
+						return (
+							<div key={meme.id}>
+								<p>{meme.name}</p>
+								<label>
+									<img src={meme.url} />
+									<input name="meme" type="radio" value={meme.id}></input>
+								</label>
+							</div>
+						);
+					})}
 					<button className="rounded border p-5 bg-yellow-400 group text-black shadow hover:shadow-lg transition-all duration-200 hover:animate-wiggle">
 						Guess!
 					</button>
@@ -123,7 +92,7 @@ const Game = ({ username, roomId }: GameProps) => {
 				{/* <button
           className="border border-black p-5"
           onClick={() => dispatch({ type: "bet", amount: 100 })}
-        >
+        >dispatch({ type: "guess", guess: number });
           Bet!
         </button> */}
 
