@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useGameRoom } from "@/hooks/useGameRoom";
 import { number } from "zod";
+import { randomMemes } from "../../game/logic";
 
 interface GameProps {
 	username: string;
@@ -21,26 +22,17 @@ const Game = ({ username, roomId }: GameProps) => {
 	const { gameState, dispatch } = useGameRoom(username, roomId);
 	const [selectedMemeId, setSelectedMemeId] = useState(null);
 
+	const generatedRandomMemes = randomMemes();
+
 	// Local state to use for the UI
 	const [guess, setGuess] = useState<number>(0);
-
-	// const [randomMemes, setRandomMemes] = useState<RandomMemes[] | []>([]);
-
-	// useEffect(() => {
-	//   const random = randomMeme();
-	//   if (random) {
-	//     setRandomMemes(random);
-	//   } else {
-	//     return;
-	//   }
-	// }, []);
 
 	// Indicated that the game is loading
 	if (gameState === null) {
 		return (
 			<p>
 				<span className="transition-all w-fit inline-block mr-4 animate-bounce">
-					🎲
+					🍝
 				</span>
 				Waiting for server...
 			</p>
@@ -51,23 +43,28 @@ const Game = ({ username, roomId }: GameProps) => {
 		event.preventDefault();
 
 		const target = event.target as typeof event.target & {
-			meme: { value: number };
+			meme: { value: string };
 		};
-		const meme = target.meme.value; // typechecks!
+		const memeID = parseInt(target.meme.value); // typechecks!
+		console.log(typeof memeID);
+		const meme = gameState.memes.find((m) => m.id === memeID);
 
-		console.log(meme);
 		// Dispatch allows you to send an action!
 		// Modify /game/logic.ts to change what actions you can send
-		dispatch({ type: "guess", guess: meme });
+		if (meme) {
+			dispatch({ type: "guess", guess: meme });
+		}
 	};
 
 	return (
 		<>
 			<h1 className="text-2xl border-b border-yellow-400 text-center relative">
-				🎲 Guess the number!
+				Guess which title belongs to the meme!
 			</h1>
 
 			<section>
+				<img className="mx-auto mt-10" src={gameState.target.url} />
+
 				<form
 					className="flex flex-col gap-4 py-6 items-center"
 					onSubmit={handleGuess}
@@ -75,10 +72,14 @@ const Game = ({ username, roomId }: GameProps) => {
 					{gameState.memes.map((meme) => {
 						return (
 							<div key={meme.id}>
-								<p>{meme.name}</p>
-								<label>
-									<img src={meme.url} />
-									<input name="meme" type="radio" value={meme.id}></input>
+								<label htmlFor="meme">
+									<input
+										className="mr-2"
+										name="meme"
+										type="radio"
+										value={meme.id}
+									></input>
+									{meme.name}
 								</label>
 							</div>
 						);

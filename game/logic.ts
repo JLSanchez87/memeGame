@@ -4,7 +4,7 @@ import { useState } from "react";
 
 // const [threeMemes, setThreeMemes] = useState([]);
 
-const randomMemes = () => {
+export const randomMemes = () => {
 	const shuffledMemes = memes.sort(() => 0.5 - Math.random()); // Shuffle the memes
 	const firstThreeMemes = shuffledMemes.slice(0, 3); // Get the first three memes
 	const randomMemeFromThreeMemes =
@@ -55,7 +55,7 @@ export type DefaultAction = { type: "UserEntered" } | { type: "UserExit" };
 
 // This interface holds all the information about your game
 export interface GameState extends BaseGameState {
-	target: number;
+	target: RandomMemes;
 }
 
 // This is how a fresh new game starts out, it's a function so you can make it dynamic!
@@ -65,14 +65,14 @@ export const initialGame = () => {
 
 	return {
 		memes: generatedRandomMemes.threeMemes,
-		target: generatedRandomMemes.answer.id,
+		target: generatedRandomMemes.answer,
 		users: [],
 		log: addLog("🐄 Game Created!", []),
 	};
 };
 
 // Here are all the actions we can dispatch for a user
-type GameAction = { type: "guess"; guess: string };
+type GameAction = { type: "guess"; guess: RandomMemes };
 
 export const gameUpdater = (
 	action: ServerAction,
@@ -100,19 +100,16 @@ export const gameUpdater = (
 			};
 
 		case "guess":
-			console.log(typeof action.guess);
-			console.log(typeof state.target);
-			console.log(parseInt(action.guess) === state.target);
-			if (parseInt(action.guess) === state.target) {
+			if (action.guess.id === state.target.id) {
 				console.log("EXEC");
 				// UPDATE STATE WITH NEW RANDOM MEMES AND CHOSEN MEME
 				const generatedRandomMemes = randomMemes();
 				return {
 					...state,
 					memes: generatedRandomMemes.threeMemes,
-					target: generatedRandomMemes.answer.id,
+					target: generatedRandomMemes.answer,
 					log: addLog(
-						`user ${action.user.id} answered ${action.guess} and won! 👑`,
+						`user ${action.user.id} answered ${action.guess.name} and won! 👑`,
 						state.log
 					),
 				};
@@ -120,7 +117,7 @@ export const gameUpdater = (
 				return {
 					...state,
 					log: addLog(
-						`user ${action.user.id} answered ${action.guess}`,
+						`user ${action.user.id} answered ${action.guess.name}`,
 						state.log
 					),
 				};
