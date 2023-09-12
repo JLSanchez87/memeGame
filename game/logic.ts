@@ -4,11 +4,11 @@ import { useState } from "react";
 
 // const [threeMemes, setThreeMemes] = useState([]);
 
-const randomMemes = () => {
-  const shuffledMemes = memes.sort(() => 0.5 - Math.random()); // Shuffle the memes
-  const firstThreeMemes = shuffledMemes.slice(0, 3); // Get the first three memes
-  const randomMemeFromThreeMemes =
-    firstThreeMemes[Math.floor(Math.random() * firstThreeMemes.length)];
+export const randomMemes = () => {
+	const shuffledMemes = memes.sort(() => 0.5 - Math.random()); // Shuffle the memes
+	const firstThreeMemes = shuffledMemes.slice(0, 3); // Get the first three memes
+	const randomMemeFromThreeMemes =
+		firstThreeMemes[Math.floor(Math.random() * firstThreeMemes.length)];
 
   return { threeMemes: firstThreeMemes, answer: randomMemeFromThreeMemes };
 };
@@ -56,13 +56,14 @@ export type DefaultAction = { type: "UserEntered" } | { type: "UserExit" };
 
 // This interface holds all the information about your game
 export interface GameState extends BaseGameState {
-  target: number;
+	target: RandomMemes;
   score: number;
 }
 
 // This is how a fresh new game starts out, it's a function so you can make it dynamic!
 // In the case of the guesser game we start out with a random target
 export const initialGame = () => {
+
   const generatedRandomMemes = randomMemes();
   let score = 0;
 
@@ -138,7 +139,7 @@ export const gameUpdater = (
           memes: generatedRandomMemes.threeMemes,
           target: generatedRandomMemes.answer.id,
           log: addLog(
-            `user ${action.user.id} answered ${action.guess} and won 1 point! 👑`,
+            `user ${action.user.id} answered ${action.guess.name} and won 1 point! 👑`,
             state.log
           ),
         };
@@ -146,7 +147,7 @@ export const gameUpdater = (
         return {
           ...state,
           log: addLog(
-            `user ${action.user.id} answered ${action.guess}`,
+            `user ${action.user.id} answered ${action.guess.name}`,
             state.log
           ),
         };

@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useGameRoom } from "@/hooks/useGameRoom";
 import { number } from "zod";
+import { randomMemes } from "../../game/logic";
 
 interface GameProps {
   username: string;
@@ -18,79 +19,84 @@ export interface RandomMemes {
 }
 
 const Game = ({ username, roomId }: GameProps) => {
-  console.log(username);
-  const { gameState, dispatch } = useGameRoom(username, roomId);
-  const [selectedMemeId, setSelectedMemeId] = useState(null);
+	const { gameState, dispatch } = useGameRoom(username, roomId);
+	const [selectedMemeId, setSelectedMemeId] = useState(null);
 
-  // Local state to use for the UI
-  const [guess, setGuess] = useState<number>(0);
+	const generatedRandomMemes = randomMemes();
 
-  // Indicated that the game is loading
-  if (gameState === null) {
-    return (
-      <p>
-        <span className="transition-all w-fit inline-block mr-4 animate-bounce">
-          🎲
-        </span>
-        Waiting for server...
-      </p>
-    );
-  }
+	// Local state to use for the UI
+	const [guess, setGuess] = useState<number>(0);
 
-  const handleGuess = (event: React.SyntheticEvent) => {
-    event.preventDefault();
+	// Indicated that the game is loading
+	if (gameState === null) {
+		return (
+			<p>
+				<span className="transition-all w-fit inline-block mr-4 animate-bounce">
+					🍝
+				</span>
+				Waiting for server...
+			</p>
+		);
+	}
 
-    const target = event.target as typeof event.target & {
-      meme: { value: number };
-    };
-    const meme = target.meme.value; // typechecks!
+	const handleGuess = (event: React.SyntheticEvent) => {
+		event.preventDefault();
 
-    console.log(meme);
-    // Dispatch allows you to send an action!
-    // Modify /game/logic.ts to change what actions you can send
-    dispatch({ type: "guess", guess: meme, username: username });
-  };
+		const target = event.target as typeof event.target & {
+			meme: { value: string };
+		};
+		const memeID = parseInt(target.meme.value); // typechecks!
+		console.log(typeof memeID);
+		const meme = gameState.memes.find((m) => m.id === memeID);
 
-  return (
-    <>
-      <h1 className="text-2xl border-b border-yellow-400 text-center relative">
-        🎲 Guess the number!
-      </h1>
+		// Dispatch allows you to send an action!
+		// Modify /game/logic.ts to change what actions you can send
+		if (meme) {
+			dispatch({ type: "guess", guess: meme });
+		}
+	};
 
-      <section>
-        <form
-          className="flex flex-col gap-4 py-6 items-center"
-          onSubmit={handleGuess}
-        >
-          {gameState.memes.map((meme, index) => {
+	return (
+		<>
+			<h1 className="text-2xl border-b border-yellow-400 text-center relative">
+				Guess which title belongs to the meme!
+			</h1>
+
+			<section>
+				<img className="mx-auto mt-10" src={gameState.target.url} />
+
+				<form
+					className="flex flex-col gap-4 py-6 items-center"
+					onSubmit={handleGuess}
+				> {gameState.memes.map((meme, index) => {
             // Define options A, B, C
             const options = ["A", "B", "C"];
 
             // Get the corresponding option based on the index
             const option = options[index % options.length];
 
-            return (
-              <div className="flex flex-row" key={meme.id}>
-                <input
-                  className="border-2 mr-4"
-                  name="meme"
-                  type="radio"
-                  id={`meme-${meme.id}`}
-                  value={meme.id}
-                />
-                <label className="mr-2" htmlFor={`meme-${meme.id}`}>
-                  {`${option})`}
-                </label>
-                <p>{meme.name}</p>
-              </div>
-            );
-          })}
-          <button className="rounded border p-5 bg-yellow-400 group text-black shadow hover:shadow-lg transition-all duration-200 hover:animate-wiggle">
-            Guess!
-          </button>
-        </form>
-        <div className="border-t border-yellow-400 py-2" />
-        {/* <button
+						return (
+							<div key={meme.id}>
+								<label htmlFor={`meme-${meme.id}`}>
+									<input
+										className="mr-2"
+										name="meme"
+										type="radio"
+                    id={`meme-${meme.id}`}
+										value={meme.id}
+									></input>
+									{`${option}) ${meme.name}`}
+								</label>
+							</div>
+						);
+					})}
+					<button className="rounded border p-5 bg-yellow-400 group text-black shadow hover:shadow-lg transition-all duration-200 hover:animate-wiggle">
+						Guess!
+					</button>
+				</form>
+
+				<div className="border-t border-yellow-400 py-2" />
+				{/* <button
           className="border border-black p-5"
           onClick={() => dispatch({ type: "bet", amount: 100 })}
         >dispatch({ type: "guess", guess: number });
