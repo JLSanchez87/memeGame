@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useGameRoom } from "@/hooks/useGameRoom";
+import { number } from "zod";
 import { randomMemes } from "../../game/logic";
 
 interface GameProps {
@@ -20,7 +21,6 @@ export interface RandomMemes {
 const Game = ({ username, roomId }: GameProps) => {
   const { gameState, dispatch } = useGameRoom(username, roomId);
   const [selectedMemeId, setSelectedMemeId] = useState(null);
-
   const generatedRandomMemes = randomMemes();
 
   // Local state to use for the UI
@@ -65,12 +65,10 @@ const Game = ({ username, roomId }: GameProps) => {
 
       <section>
         <img className="mx-auto mt-10" src={gameState.target.url} />
-
         <form
           className="flex flex-col gap-4 py-6 items-center"
           onSubmit={handleGuess}
         >
-          {" "}
           {gameState.memes.map((meme, index) => {
             // Define options A, B, C
             const options = ["A", "B", "C"];

@@ -13,7 +13,11 @@ export const randomMemes = () => {
 };
 
 // util for easy adding logs
-const addLog = (message: string, logs: GameState["log"]): GameState["log"] => {
+
+export const addLog = (
+  message: string,
+  logs: GameState["log"]
+): GameState["log"] => {
   return [{ dt: new Date().getTime(), message: message }, ...logs].slice(
     0,
     MAX_LOG_SIZE
@@ -102,12 +106,15 @@ export const gameUpdater = (
       };
 
     case "guess":
+      console.log(typeof action.guess);
+      console.log(typeof state.target);
       console.log("action.username");
       console.log(action.username);
+      console.log(parseInt(action.guess) === state.target);
       if (action.guess.id === state.target.id) {
         console.log("EXEC");
         // UPDATE STATE WITH NEW RANDOM MEMES AND CHOSEN MEME
-        const generatedRandomMemes = randomMemes();
+        // const generatedRandomMemes = randomMemes();
         console.log(action.username);
 
         const newUsers = state.users.map((user) => {
@@ -124,12 +131,11 @@ export const gameUpdater = (
         });
 
         console.log(newUsers);
-
+        
         return {
           ...state,
-          users: newUsers,
-          memes: generatedRandomMemes.threeMemes,
-          target: generatedRandomMemes.answer,
+          // memes: generatedRandomMemes.threeMemes,
+          // target: generatedRandomMemes.answer.id,
           log: addLog(
             `user ${action.user.id} answered ${action.guess.name} and won 1 point! 👑`,
             state.log
