@@ -4,18 +4,18 @@ import { number } from "zod";
 import { randomMemes } from "../../game/logic";
 
 interface GameProps {
-	username: string;
-	roomId: string;
+  username: string;
+  roomId: string;
 }
 
 export interface RandomMemes {
-	id: number;
-	name: string;
-	url: string;
-	width?: number;
-	height?: number;
-	box_count?: number;
-	captions?: number;
+  id: number;
+  name: string;
+  url: string;
+  width?: number;
+  height?: number;
+  box_count?: number;
+  captions?: number;
 }
 
 const Game = ({ username, roomId }: GameProps) => {
@@ -68,18 +68,24 @@ const Game = ({ username, roomId }: GameProps) => {
 				<form
 					className="flex flex-col gap-4 py-6 items-center"
 					onSubmit={handleGuess}
-				>
-					{gameState.memes.map((meme) => {
+				> {gameState.memes.map((meme, index) => {
+            // Define options A, B, C
+            const options = ["A", "B", "C"];
+
+            // Get the corresponding option based on the index
+            const option = options[index % options.length];
+
 						return (
 							<div key={meme.id}>
-								<label htmlFor="meme">
+								<label htmlFor={`meme-${meme.id}`}>
 									<input
 										className="mr-2"
 										name="meme"
 										type="radio"
+                    id={`meme-${meme.id}`}
 										value={meme.id}
 									></input>
-									{meme.name}
+									{`${option}) ${meme.name}`}
 								</label>
 							</div>
 						);
@@ -97,32 +103,34 @@ const Game = ({ username, roomId }: GameProps) => {
           Bet!
         </button> */}
 
-				<div className=" bg-yellow-100 flex flex-col p-4 rounded text-sm">
-					{gameState.log.map((logEntry, i) => (
-						<p key={logEntry.dt} className="animate-appear text-black">
-							{logEntry.message}
-						</p>
-					))}
-				</div>
+        <div className=" bg-yellow-100 flex flex-col p-4 rounded text-sm">
+          {gameState.log.map((logEntry, i) => (
+            <p key={logEntry.dt} className="animate-appear text-black">
+              {logEntry.message}
+            </p>
+          ))}
+        </div>
 
-				<h2 className="text-lg">
-					Players in room <span className="font-bold">{roomId}</span>
-				</h2>
-				<div className="flex flex-wrap gap-2">
-					{gameState.users.map((user) => {
-						return (
-							<p
-								className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-black text-white"
-								key={user.id}
-							>
-								{user.id}
-							</p>
-						);
-					})}
-				</div>
-			</section>
-		</>
-	);
+        <h2 className="text-lg">
+          Players in room <span className="font-bold">{roomId}</span>
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {gameState.users.map((user) => {
+            console.log("score", user.id);
+            console.log(user.score);
+            return (
+              <p
+                className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-black text-white"
+                key={user.id}
+              >
+                {user.id} | {user.score}
+              </p>
+            );
+          })}
+        </div>
+      </section>
+    </>
+  );
 };
 
 export default Game;
