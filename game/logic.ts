@@ -147,13 +147,17 @@ export const gameUpdater = (
         const usersWithCorrectAnswers = [];
 
         // If 10 rounds are done, change status to "Finished"
-        if (updatedRoundsCompleted >= 10) {
+        if (updatedRoundsCompleted === 10) {
           const finishedLog = addLog("🏁 Game Finished!", state.log);
           return {
             ...state,
             roundsCompleted: updatedRoundsCompleted,
             status: "Finished",
             log: finishedLog,
+          };
+        } else if (updatedRoundsCompleted > 10) {
+          return {
+            ...state,
           };
         }
 
