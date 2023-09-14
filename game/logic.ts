@@ -141,10 +141,12 @@ export const gameUpdater = (
         state.currentSecondsElapsed >= state.questionDurationSeconds;
 
       if (questionDone) {
+        // Add +1 to roundsCompleted, after each round is finished
         const updatedRoundsCompleted = state.roundsCompleted + 1;
         // Initialize variables to keep track of users who answered correctly
         const usersWithCorrectAnswers = [];
 
+        // If 10 rounds are done, change status to "Finished"
         if (updatedRoundsCompleted >= 10) {
           const finishedLog = addLog("🏁 Game Finished!", state.log);
           return {
@@ -176,6 +178,7 @@ export const gameUpdater = (
             ? `user(s) ${usersWithCorrectAnswers.join(", ")} answered correctly`
             : "no one answered correctly";
 
+        // check the answers and update scores and update rounds completed
         return {
           ...state,
           currentSecondsElapsed: 0,
@@ -183,6 +186,7 @@ export const gameUpdater = (
           target: newGeneratedRandomMemes.answer,
           log: addLog(`${correctAnswersString} and won 1 point! 👑`, state.log),
           currentAnswer: [], // Clear the current answers for the next round
+          roundsCompleted: updatedRoundsCompleted,
         };
       }
   }
