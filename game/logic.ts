@@ -122,7 +122,6 @@ export const gameUpdater = (
         currentSecondsElapsed: 0,
         status: "Started",
         roundsCompleted: 0,
-        log: [],
       };
 
     case "guess":
