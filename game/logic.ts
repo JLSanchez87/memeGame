@@ -50,7 +50,7 @@ type WithUser<T> = T & { user: User };
 
 export type DefaultAction = { type: "UserEntered" } | { type: "UserExit" };
 
-const QUESTION_DURATION_SECONDS = 15;
+const QUESTION_DURATION_SECONDS = 10;
 
 // This interface holds all the information about your game
 export interface GameState extends BaseGameState {
