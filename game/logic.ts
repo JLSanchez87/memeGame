@@ -1,5 +1,6 @@
 import { RandomMemes } from "@/components/Game";
 import memes from "@/pages/data/memes.json";
+import { stat } from "fs";
 // const [threeMemes, setThreeMemes] = useState([]);
 
 export const randomMemes = () => {
@@ -54,13 +55,14 @@ const QUESTION_DURATION_SECONDS = 10;
 
 // This interface holds all the information about your game
 export interface GameState extends BaseGameState {
-  status: "Started" | "Waiting";
+  status: "Started" | "Waiting" | "Finished";
   memes: RandomMemes[];
   scores: { id: string; score: number }[];
   currentAnswer: { userId: string; guess_id: number }[];
   currentSecondsElapsed: number;
   questionDurationSeconds: number;
   target: RandomMemes;
+  roundsCompleted: number;
 }
 
 // This is how a fresh new game starts out, it's a function so you can make it dynamic!
@@ -76,6 +78,7 @@ export const initialGame = (): GameState => {
     currentAnswer: [],
     currentSecondsElapsed: 0,
     questionDurationSeconds: QUESTION_DURATION_SECONDS,
+    roundsCompleted: 0,
     log: addLog("🐄 Game Created!", []),
   };
 };
@@ -118,6 +121,8 @@ export const gameUpdater = (
         currentAnswer: [],
         currentSecondsElapsed: 0,
         status: "Started",
+        roundsCompleted: 0,
+        log: [],
       };
 
     case "guess":
@@ -136,52 +141,88 @@ export const gameUpdater = (
         state.currentSecondsElapsed >= state.questionDurationSeconds;
 
       if (questionDone) {
-        // check the answers and update scores
+        const updatedRoundsCompleted = state.roundsCompleted + 1;
+        // Initialize variables to keep track of users who answered correctly
+        const usersWithCorrectAnswers = [];
+
+        if (updatedRoundsCompleted >= 10) {
+          const finishedLog = addLog("🏁 Game Finished!", state.log);
+          return {
+            ...state,
+            roundsCompleted: updatedRoundsCompleted,
+            status: "Finished",
+            log: finishedLog,
+          };
+        }
+
+        // Iterate through currentAnswer and check each user's guess
+        for (const answer of state.currentAnswer) {
+          const user = state.users.find((u) => u.id === answer.userId);
+          if (user && answer.guess_id === state.target.id) {
+            // If the user's guess is correct, update their score
+            const userIndex = state.scores.findIndex((s) => s.id === user.id);
+            if (userIndex !== -1) {
+              const newScores = [...state.scores];
+              newScores[userIndex].score += 1;
+              usersWithCorrectAnswers.push(user.id);
+              state = { ...state, scores: newScores };
+            }
+          }
+        }
+
+        // Log the results
+        const correctAnswersString =
+          usersWithCorrectAnswers.length > 0
+            ? `user(s) ${usersWithCorrectAnswers.join(", ")} answered correctly`
+            : "no one answered correctly";
+
         return {
           ...state,
           currentSecondsElapsed: 0,
           memes: newGeneratedRandomMemes.threeMemes,
           target: newGeneratedRandomMemes.answer,
+          log: addLog(`${correctAnswersString} and won 1 point! 👑`, state.log),
+          currentAnswer: [], // Clear the current answers for the next round
         };
       }
-
-      return {
-        ...state,
-        currentSecondsElapsed: state.currentSecondsElapsed + 1,
-      };
-    // if (action.guess.id === state.target.id) {
-    //   const newUsers = state.users.map((user) => {
-    //     // ALS user.id === action.username
-    //     // DAN increase score en return user
-    //     // ELSE doe niks en return user
-    //     if (user.id === action.username) {
-    //       const newScore = user.score + 1;
-    //       console.log(newScore);
-    //       return { ...user, score: newScore };
-    //     } else {
-    //       return user;
-    //     }
-    //   });
-
-    //   console.log(newUsers);
-
-    //   return {
-    //     ...state,
-    //     // memes: generatedRandomMemes.threeMemes,
-    //     // target: generatedRandomMemes.answer.id,
-    //     log: addLog(
-    //       `user ${action.user.id} answered ${action.guess.name} and won 1 point! 👑`,
-    //       state.log
-    //     ),
-    //   };
-    // } else {
-    //   return {
-    //     ...state,
-    //     log: addLog(
-    //       `user ${action.user.id} answered ${action.guess.name}`,
-    //       state.log
-    //     ),
-    //   };
-    // }
   }
+
+  return {
+    ...state,
+    currentSecondsElapsed: state.currentSecondsElapsed + 1,
+  };
+  // if (action.guess.id === state.target.id) {
+  //   const newUsers = state.users.map((user) => {
+  //     // ALS user.id === action.username
+  //     // DAN increase score en return user
+  //     // ELSE doe niks en return user
+  //     if (user.id === action.username) {
+  //       const newScore = user.score + 1;
+  //       console.log(newScore);
+  //       return { ...user, score: newScore };
+  //     } else {
+  //       return user;
+  //     }
+  //   });
+
+  //   console.log(newUsers);
+
+  //   return {
+  //     ...state,
+  //     // memes: generatedRandomMemes.threeMemes,
+  //     // target: generatedRandomMemes.answer.id,
+  //     log: addLog(
+  //       `user ${action.user.id} answered ${action.guess.name} and won 1 point! 👑`,
+  //       state.log
+  //     ),
+  //   };
+  // } else {
+  //   return {
+  //     ...state,
+  //     log: addLog(
+  //       `user ${action.user.id} answered ${action.guess.name}`,
+  //       state.log
+  //     ),
+  //   };
+  // }
 };
