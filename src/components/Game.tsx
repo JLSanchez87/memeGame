@@ -104,10 +104,17 @@ const Game = ({ username, roomId }: GameProps) => {
               {gameState.questionDurationSeconds}
             </p>
           </>
-        ) : (
+        ) : gameState.status === "Waiting" ? (
           <button onClick={() => dispatch({ type: "start_game" })}>
             Start Game!
           </button>
+        ) : (
+          <div>
+            <span>Game is finished 🏁</span>
+            <button onClick={() => dispatch({ type: "start_game" })}>
+              Play again!
+            </button>
+          </div>
         )}
 
         <div className="border-t border-yellow-400 py-2" />

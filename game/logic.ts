@@ -54,13 +54,14 @@ const QUESTION_DURATION_SECONDS = 10;
 
 // This interface holds all the information about your game
 export interface GameState extends BaseGameState {
-  status: "Started" | "Waiting";
+  status: "Started" | "Waiting" | "Finished";
   memes: RandomMemes[];
   scores: { id: string; score: number }[];
   currentAnswer: { userId: string; guess_id: number }[];
   currentSecondsElapsed: number;
   questionDurationSeconds: number;
   target: RandomMemes;
+  roundsCompleted: number;
 }
 
 // This is how a fresh new game starts out, it's a function so you can make it dynamic!
@@ -76,6 +77,7 @@ export const initialGame = (): GameState => {
     currentAnswer: [],
     currentSecondsElapsed: 0,
     questionDurationSeconds: QUESTION_DURATION_SECONDS,
+    roundsCompleted: 0,
     log: addLog("🐄 Game Created!", []),
   };
 };
@@ -118,6 +120,8 @@ export const gameUpdater = (
         currentAnswer: [],
         currentSecondsElapsed: 0,
         status: "Started",
+        roundsCompleted: 0,
+        log: [],
       };
 
     case "guess":
@@ -136,12 +140,27 @@ export const gameUpdater = (
         state.currentSecondsElapsed >= state.questionDurationSeconds;
 
       if (questionDone) {
-        // check the answers and update scores
+        // Add +1 to roundsCompleted, after each round is finished
+        const updatedRoundsCompleted = state.roundsCompleted + 1;
+
+        // If 10 rounds are done, change status to "Finished"
+        if (updatedRoundsCompleted >= 10) {
+          const finishedLog = addLog("🏁 Game Finished!", state.log);
+          return {
+            ...state,
+            roundsCompleted: updatedRoundsCompleted,
+            status: "Finished",
+            log: finishedLog,
+          };
+        }
+
+        // check the answers and update scores and update rounds completed
         return {
           ...state,
           currentSecondsElapsed: 0,
           memes: newGeneratedRandomMemes.threeMemes,
           target: newGeneratedRandomMemes.answer,
+          roundsCompleted: updatedRoundsCompleted,
         };
       }
 
