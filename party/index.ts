@@ -23,20 +23,13 @@ export default class Server implements Party.Server {
     // party.storage.put;
   }
   onStart() {
-    console.log("WEBSOCKET SERVER STARTED");
-    // Create the functionality for the interval:
-    // - [X] Every 10 seconds, start a new round
-    // - [ ] Max it at 10 rounds
-    const roundsInterval = setInterval(() => {
-      const newMemes = randomMemes();
-      // Functionality to execute every 10 seconds
-      const newGameState = {
-        ...this.gameState,
-        memes: newMemes.threeMemes,
-        target: newMemes.answer.id,
-      };
-      this.party.broadcast(JSON.stringify(newGameState));
-    }, 20_000);
+    setInterval(() => {
+      this.gameState = gameUpdater(
+        { type: "tick", user: { id: "" } },
+        this.gameState
+      );
+      this.party.broadcast(JSON.stringify(this.gameState));
+    }, 1000);
   }
   onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {
     // A websocket just connected!

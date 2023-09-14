@@ -1,6 +1,5 @@
 import { RandomMemes } from "@/components/Game";
 import memes from "@/pages/data/memes.json";
-
 // const [threeMemes, setThreeMemes] = useState([]);
 
 export const randomMemes = () => {
@@ -27,12 +26,10 @@ export const addLog = (
 // If there is anything you want to track for a specific user, change this interface
 export interface User {
   id: string;
-  score: number;
 }
 
 // Do not change this! Every game has a list of users and log of actions
 interface BaseGameState {
-  memes: RandomMemes[];
   users: User[];
   log: {
     dt: number;
@@ -53,102 +50,139 @@ type WithUser<T> = T & { user: User };
 
 export type DefaultAction = { type: "UserEntered" } | { type: "UserExit" };
 
+const QUESTION_DURATION_SECONDS = 15;
+
 // This interface holds all the information about your game
 export interface GameState extends BaseGameState {
+  status: "Started" | "Waiting";
+  memes: RandomMemes[];
+  scores: { id: string; score: number }[];
+  currentAnswer: { userId: string; guess_id: number }[];
+  currentSecondsElapsed: number;
+  questionDurationSeconds: number;
   target: RandomMemes;
-  score: number;
 }
 
 // This is how a fresh new game starts out, it's a function so you can make it dynamic!
 // In the case of the guesser game we start out with a random target
-export const initialGame = () => {
+export const initialGame = (): GameState => {
   const generatedRandomMemes = randomMemes();
-  let score = 0;
 
   return {
+    status: "Waiting",
     memes: generatedRandomMemes.threeMemes,
     target: generatedRandomMemes.answer,
     users: [],
+    scores: [],
+    currentAnswer: [],
+    currentSecondsElapsed: 0,
+    questionDurationSeconds: QUESTION_DURATION_SECONDS,
     log: addLog("🐄 Game Created!", []),
-    score: score,
   };
 };
 
 // Here are all the actions we can dispatch for a user
-type GameAction = { type: "guess"; guess: RandomMemes; username: string };
+type GameAction =
+  | { type: "guess"; guess: RandomMemes; username: string }
+  | { type: "start_game" }
+  | { type: "tick"; passed: number };
 
 export const gameUpdater = (
   action: ServerAction,
   state: GameState
 ): GameState => {
-  // This switch should have a case for every action type you add.
-
-  // "UserEntered" & "UserExit" are defined by default
-
-  // Every action has a user field that represent the user who dispatched the action,
-  // you don't need to add this yourself
   switch (action.type) {
     case "UserEntered":
       const newUser = {
         id: action.user.id,
-        score: 0, // Initialize the user's score to 0
       };
       return {
         ...state,
         users: [...state.users, newUser],
+        scores: [...state.scores, { id: newUser.id, score: 0 }],
         log: addLog(`user ${action.user.id} joined 🎉`, state.log),
       };
     case "UserExit":
       return {
         ...state,
         users: state.users.filter((user) => user.id !== action.user.id),
+        scores: state.scores.filter((score) => score.id !== action.user.id),
         log: addLog(`user ${action.user.id} left 😢`, state.log),
+      };
+    case "start_game":
+      const generatedRandomMemes = randomMemes();
+
+      return {
+        ...state,
+        memes: generatedRandomMemes.threeMemes,
+        target: generatedRandomMemes.answer,
+        currentAnswer: [],
+        currentSecondsElapsed: 0,
+        status: "Started",
       };
 
     case "guess":
-      console.log(typeof action.guess);
-      console.log(typeof state.target);
-      console.log("action.username");
-      console.log(action.username);
-      console.log(parseInt(action.guess) === state.target);
-      if (action.guess.id === state.target.id) {
-        console.log("EXEC");
-        // UPDATE STATE WITH NEW RANDOM MEMES AND CHOSEN MEME
-        // const generatedRandomMemes = randomMemes();
-        console.log(action.username);
+      return {
+        ...state,
+        currentAnswer: [
+          ...state.currentAnswer.filter(
+            (answer) => answer.userId !== action.user.id
+          ),
+          { userId: action.user.id, guess_id: action.guess.id },
+        ],
+      };
+    case "tick":
+      const newGeneratedRandomMemes = randomMemes();
+      const questionDone =
+        state.currentSecondsElapsed >= state.questionDurationSeconds;
 
-        const newUsers = state.users.map((user) => {
-          // ALS user.id === action.username
-          // DAN increase score en return user
-          // ELSE doe niks en return user
-          if (user.id === action.username) {
-            const newScore = user.score + 1;
-            console.log(newScore);
-            return { ...user, score: newScore };
-          } else {
-            return user;
-          }
-        });
-
-        console.log(newUsers);
-        
+      if (questionDone) {
+        // check the answers and update scores
         return {
           ...state,
-          // memes: generatedRandomMemes.threeMemes,
-          // target: generatedRandomMemes.answer.id,
-          log: addLog(
-            `user ${action.user.id} answered ${action.guess.name} and won 1 point! 👑`,
-            state.log
-          ),
-        };
-      } else {
-        return {
-          ...state,
-          log: addLog(
-            `user ${action.user.id} answered ${action.guess.name}`,
-            state.log
-          ),
+          currentSecondsElapsed: 0,
+          memes: newGeneratedRandomMemes.threeMemes,
+          target: newGeneratedRandomMemes.answer,
         };
       }
+
+      return {
+        ...state,
+        currentSecondsElapsed: state.currentSecondsElapsed + 1,
+      };
+    // if (action.guess.id === state.target.id) {
+    //   const newUsers = state.users.map((user) => {
+    //     // ALS user.id === action.username
+    //     // DAN increase score en return user
+    //     // ELSE doe niks en return user
+    //     if (user.id === action.username) {
+    //       const newScore = user.score + 1;
+    //       console.log(newScore);
+    //       return { ...user, score: newScore };
+    //     } else {
+    //       return user;
+    //     }
+    //   });
+
+    //   console.log(newUsers);
+
+    //   return {
+    //     ...state,
+    //     // memes: generatedRandomMemes.threeMemes,
+    //     // target: generatedRandomMemes.answer.id,
+    //     log: addLog(
+    //       `user ${action.user.id} answered ${action.guess.name} and won 1 point! 👑`,
+    //       state.log
+    //     ),
+    //   };
+    // } else {
+    //   return {
+    //     ...state,
+    //     log: addLog(
+    //       `user ${action.user.id} answered ${action.guess.name}`,
+    //       state.log
+    //     ),
+    //   };
+    // }
   }
 };
