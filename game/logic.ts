@@ -67,7 +67,6 @@ export interface GameState extends BaseGameState {
 // In the case of the guesser game we start out with a random target
 export const initialGame = (): GameState => {
   const generatedRandomMemes = randomMemes();
-
   return {
     status: "Waiting",
     memes: generatedRandomMemes.threeMemes,
@@ -85,7 +84,7 @@ export const initialGame = (): GameState => {
 type GameAction =
   | { type: "guess"; guess: RandomMemes; username: string }
   | { type: "start_game" }
-  | { type: "tick"; passed: number };
+  | { type: "tick" };
 
 export const gameUpdater = (
   action: ServerAction,
